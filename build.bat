@@ -1,3 +1,3 @@
 @echo off
 
-wasm-pack build --target web --out-dir wasm --out-name lib
+wasm-pack build --target web --out-dir src/wasm --out-name lib
