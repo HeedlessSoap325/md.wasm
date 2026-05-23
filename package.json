@@ -4,8 +4,14 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
-		"dev": "wasm-pack build --target web --out-dir src/wasm --out-name lib && vite dev",
-		"build": "wasm-pack build --target web --out-dir src/wasm --out-name lib && vite build",
+		"dev:wasm": "cargo watch -s \"wasm-pack build --target web --out-dir src/wasm --out-name lib --dev\"",
+		"dev:vite": "vite dev",
+		"dev": "concurrently \"npm:dev:wasm\" \"npm:dev:vite\"",
+		
+		"build:wasm" : "wasm-pack build --target web --out-dir src/wasm --out-name lib --release",
+		"build:vite": "vite build",
+		"build": "npm run build:wasm && npm run build:vite",
+	
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
