@@ -23,5 +23,5 @@ pub fn parse_markdown_to_html(markdown: &str) -> String {
 
 #[wasm_bindgen]
 pub fn word_count(markdown: &str) -> u32 {
-    markdown.split_whitespace().count() as u32 + 1
+    markdown.split_whitespace().count() as u32
 }

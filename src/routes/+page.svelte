@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte"
-  	import init, { word_count } from "../wasm/lib";
+  	import init, { word_count } from "$rust/lib";
 
 	onMount(() => {
 		init().then(() => {
