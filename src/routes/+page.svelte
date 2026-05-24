@@ -51,6 +51,11 @@ pub fn parse_markdown(input: &str) -> String {
 	let statChars = $state();
 	let statTime  = $state();
 
+	let dragging = false;
+	let mainEl = $state();
+	let dividerEl = $state();
+	let editorWidthFR = $state(50);
+
 	function render() {
 		console.log("test")
 		const t0 = performance.now();
@@ -65,26 +70,24 @@ pub fn parse_markdown(input: &str) -> String {
 		statTime  = `${ms}ms`;
 	}
 
-	/**
-	// ── Optional: draggable divider ─────────────────────────────────────────────
-	// This lets you resize the two panes by dragging the divider.
-	const divider = document.getElementById('divider');
-	const mainEl  = document.querySelector('main');
+	function dividerMouseDown(e) {
+		if (e.target === dividerEl) {
+			e.preventDefault();
+			dragging = true;
+		}
+	}
 
-	let dragging = false;
+	function dividerMouseMove(e) {
+		if (!dragging) return;
 
-	divider.addEventListener('mousedown', () => { dragging = true; });
+		const rect  = mainEl.getBoundingClientRect();
+		const pct   = ((e.clientX - rect.left) / rect.width) * 100;
+		editorWidthFR = Math.max(20, Math.min(80, pct));
+	}
 
-	document.addEventListener('mousemove', (e) => {
-	if (!dragging) return;
-	const rect  = mainEl.getBoundingClientRect();
-	const pct   = ((e.clientX - rect.left) / rect.width) * 100;
-	const clamped = Math.max(20, Math.min(80, pct));
-	mainEl.style.gridTemplateColumns = `${clamped}fr 1px ${100 - clamped}fr`;
-	});
-
-	document.addEventListener('mouseup', () => { dragging = false; });
-	**/
+	function dividerMouseUp() {
+		dragging = false;
+	}
 
 	onMount(() => {
 		init().then(() => {
@@ -95,7 +98,7 @@ pub fn parse_markdown(input: &str) -> String {
 	});
 </script>
   
-<main>
+<main bind:this={mainEl} onmousedown={dividerMouseDown} onmousemove={dividerMouseMove} onmouseup={dividerMouseUp} aria-hidden="true" style="--editorWidthFR: {editorWidthFR}fr; --previewWidthFR: {100 - editorWidthFR}fr; ">
 	<div class="editor-pane">
 		<div class="pane-label">
 			<span>Markdown</span>
@@ -103,7 +106,7 @@ pub fn parse_markdown(input: &str) -> String {
 		<textarea id="editor" oninput={render} bind:value={text} spellcheck="false" placeholder="Start typing Markdown…"></textarea>
 	</div>
   
-	<div class="divider" id="divider"></div>
+	<div bind:this={dividerEl} id="divider"></div>
   
 	<div class="preview-pane">
 		<div class="pane-label">
@@ -160,12 +163,12 @@ pub fn parse_markdown(input: &str) -> String {
 
     main {
 		display: grid;
-		grid-template-columns: 1fr var(--divider-width) 1fr;
+		grid-template-columns: var(--editorWidthFR) var(--divider-width) var(--previewWidthFR); /* editorWidthFR & previewWidthFR is passed from TS */
 		flex: 1;
 		overflow: hidden;
     }
 
-    .divider {
+    #divider {
 		width: var(--divider-width);
 		background: var(--border);
 		cursor: col-resize;
@@ -173,7 +176,7 @@ pub fn parse_markdown(input: &str) -> String {
 		border-radius: var(--divider-width);
     }
 
-    .divider:hover { 
+    #divider:hover { 
 		background: var(--accent); 
 	}
 
