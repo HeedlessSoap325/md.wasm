@@ -63,11 +63,11 @@ pub fn parse_markdown(input: &str) -> String {
 		preview = parse_markdown_to_html(text);
 		const words = word_count(text);
 
-		const ms = (performance.now() - t0).toFixed(2);
+		const ms = (performance.now() - t0).toFixed(0);
 
 		statWords = `${words} word${words !== 1 ? 's' : ''}`;
 		statChars = `${text.length} chars`;
-		statTime  = `${ms}ms`;
+		statTime  = `${ms} ms`;
 	}
 
 	function dividerMouseDown(e: MouseEvent) {
