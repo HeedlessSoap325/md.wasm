@@ -41,23 +41,23 @@ pub fn parse_markdown(input: &str) -> String {
 - [ ] Export to file
 
 > "Move the CPU-heavy work to Wasm,
->  keep the DOM work in JS."`;
+>  keep the DOM work in JS."
+`;
 
 	let loaded 	  = $state(false);
 
 	let text      = $state(STARTER);
-	let preview   = $state();
-	let statWords = $state();
-	let statChars = $state();
-	let statTime  = $state();
+	let preview   = $state("");
+	let statWords = $state("0 words");
+	let statChars = $state("0 chars");
+	let statTime  = $state("not ready");
 
-	let dragging = false;
-	let mainEl = $state();
-	let dividerEl = $state();
-	let editorWidthFR = $state(50);
+	let dragging  = $state(false);
+	let mainEl 	  = $state<HTMLElement | undefined>(undefined);
+	let dividerEl = $state<HTMLDivElement | undefined>(undefined);
+	let editorFR  = $state(50);
 
 	function render() {
-		console.log("test")
 		const t0 = performance.now();
 
 		preview = parse_markdown_to_html(text);
@@ -70,19 +70,19 @@ pub fn parse_markdown(input: &str) -> String {
 		statTime  = `${ms}ms`;
 	}
 
-	function dividerMouseDown(e) {
-		if (e.target === dividerEl) {
+	function dividerMouseDown(e: MouseEvent) {
+		if (e.target === dividerEl!) {
 			e.preventDefault();
 			dragging = true;
 		}
 	}
 
-	function dividerMouseMove(e) {
+	function dividerMouseMove(e: MouseEvent) {
 		if (!dragging) return;
 
-		const rect  = mainEl.getBoundingClientRect();
+		const rect  = mainEl!.getBoundingClientRect();
 		const pct   = ((e.clientX - rect.left) / rect.width) * 100;
-		editorWidthFR = Math.max(20, Math.min(80, pct));
+		editorFR = Math.max(20, Math.min(80, pct));
 	}
 
 	function dividerMouseUp() {
@@ -98,12 +98,23 @@ pub fn parse_markdown(input: &str) -> String {
 	});
 </script>
   
-<main bind:this={mainEl} onmousedown={dividerMouseDown} onmousemove={dividerMouseMove} onmouseup={dividerMouseUp} aria-hidden="true" style="--editorWidthFR: {editorWidthFR}fr; --previewWidthFR: {100 - editorWidthFR}fr; ">
+<main 
+	bind:this={mainEl} 
+	onmousedown={dividerMouseDown} onmousemove={dividerMouseMove} onmouseup={dividerMouseUp} 
+	aria-hidden="true" 
+	style="--editorWidthFR: {editorFR}fr; --previewWidthFR: {100 - editorFR}fr;"
+>
 	<div class="editor-pane">
 		<div class="pane-label">
 			<span>Markdown</span>
 		</div>
-		<textarea id="editor" oninput={render} bind:value={text} spellcheck="false" placeholder="Start typing Markdown…"></textarea>
+
+		{#if loaded}
+			<textarea id="editor" 
+				oninput={render} bind:value={text} 
+				spellcheck="false" placeholder="Start typing Markdown…"
+			></textarea>
+		{/if}
 	</div>
   
 	<div bind:this={dividerEl} id="divider"></div>
