@@ -52,6 +52,7 @@ pub fn parse_markdown(input: &str) -> String {
 	let statTime  = $state();
 
 	function render() {
+		console.log("test")
 		const t0 = performance.now();
 
 		preview = parse_markdown_to_html(text);
@@ -86,42 +87,161 @@ pub fn parse_markdown(input: &str) -> String {
 	**/
 
 	onMount(() => {
-		init().then(() => loaded = true);
-	});
-
-	$effect(() => {
-		if (loaded) {
-			render(STARTER);
-
-			editor.addEventListener('input', () => render(editor.value));
-
+		init().then(() => {
+			loaded = true;
+			render();
 			statTime = "Ready";
-		}
+		});
 	});
 </script>
-
-<header>
-	<div class="logo">
-		<span>Markdown Renderer</span>
-		<span class="logo-badge">Wasm</span>
-	</div>
-	<div class="stats">
-		<span id="stat-words">{ statWords }</span>
-		<span id="stat-chars">{ statChars }</span>
-		<span id="stat-time">{ statTime }</span>
-	</div>
-</header>
   
 <main>
 	<div class="editor-pane">
-		<div class="pane-label">Markdown</div>
-		<textarea id="editor" bind:value={text} spellcheck="false" placeholder="Start typing Markdown…"></textarea>
+		<div class="pane-label">
+			<span>Markdown</span>
+		</div>
+		<textarea id="editor" oninput={render} bind:value={text} spellcheck="false" placeholder="Start typing Markdown…"></textarea>
 	</div>
   
 	<div class="divider" id="divider"></div>
   
 	<div class="preview-pane">
-		<div class="pane-label">Preview</div>
-		<div id="preview">{@html preview}</div>
+		<div class="pane-label">
+			<span>Preview</span>
+
+			<div class="stats">
+				<span id="stat-words">{ statWords }</span>
+				<span id="stat-chars">{ statChars }</span>
+				<span id="stat-time">{ statTime }</span>
+			</div>
+		</div>
+
+		<div id="preview" class="markdown-body">{@html preview}</div>
 	</div>
 </main>
+
+<style>
+	@import "$lib/assets/github-markdown-dark.css";
+
+    *, *::before, *::after { 
+		box-sizing: border-box; 
+		margin: 0; 
+		padding: 0; 
+	}
+
+    :root {
+		--bg:       #0f1117;
+		--surface:  #1a1d27;
+		--border:   #2a2d3a;
+		--accent:   #7c6af7;
+		--text:     #e2e4ef;
+		--muted:    #6b6f85;
+		--font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+		--font-sans: 'Inter', system-ui, sans-serif;
+		--divider-width: 5px;
+		--pane-margin-inline: 16px;
+		--pane-margin-incol: 8px;
+    }
+
+	:global(html, body) {
+		height: 100%;
+	}
+
+	:global(body) {
+		font-family: var(--font-sans);
+		background: var(--bg);
+		color: var(--text);
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		padding: 0;
+		margin: 0;
+	}
+
+    main {
+		display: grid;
+		grid-template-columns: 1fr var(--divider-width) 1fr;
+		flex: 1;
+		overflow: hidden;
+    }
+
+    .divider {
+		width: var(--divider-width);
+		background: var(--border);
+		cursor: col-resize;
+		transition: background 0.2s;
+		border-radius: var(--divider-width);
+    }
+
+    .divider:hover { 
+		background: var(--accent); 
+	}
+
+    .editor-pane {
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+    }
+
+    .pane-label {
+		padding: 8px 16px;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--muted);
+		border-bottom: 1px solid var(--border);
+		flex-shrink: 0;
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+    }
+
+	.stats {
+		font-size: 12px;
+		color: var(--muted);
+		display: flex;
+		gap: 16px;
+    }
+
+    .stats span { 
+		transition: color 0.2s; 
+	}
+
+    #editor {
+		flex: 1;
+		width: calc(100% - 2 * var(--pane-margin-inline));
+		resize: none;
+		border: none;
+		outline: none;
+		background: var(--surface);
+		color: var(--text);
+		font-family: var(--font-mono);
+		font-size: 14px;
+		line-height: 1.7;
+		margin: var(--pane-margin-incol) var(--pane-margin-inline);
+		padding: 10px 12px;
+		padding-bottom: calc(10 * var(--pane-margin-incol));
+		tab-size: 2;
+		caret-color: var(--accent);
+		scrollbar-width: none;
+    }
+
+    #editor::selection { 
+		background: rgba(124, 106, 247, 0.3); 
+	}
+
+    .preview-pane {
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+    }
+
+	#preview {
+		overflow: scroll;
+		scrollbar-width: none;
+		width: calc(100% - 2 * var(--pane-margin-inline));
+		margin: var(--pane-margin-incol) var(--pane-margin-inline);
+		padding-bottom: calc(10 * var(--pane-margin-incol));
+	}
+</style>
